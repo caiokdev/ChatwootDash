@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard premium de métricas do Chatwoot — Conversas, etiquetas e atribuições em tempo real.">
+    <title>Chatwoot Analytics</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="https://cdn.simpleicons.org/chatwoot/8b5cf6" type="image/svg+xml">
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="https://cdn.simpleicons.org/chatwoot/8b5cf6" alt="" width="24" height="24" aria-hidden="true" />
+                <h1>Chatwoot Analytics</h1>
+            </div>
+            
+            <div class="header-meta">
+                <div class="status-indicator" id="status-indicator">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span id="status-text">Conectando…</span>
+                </div>
+                <span class="last-update" id="last-update">—</span>
+            </div>
+            
+            <div class="header-actions">
+                <div class="auto-refresh-wrapper active" id="auto-refresh-toggle" role="button" tabindex="0" aria-label="Alternar auto-refresh">
+                    <svg class="refresh-progress-ring" viewBox="0 0 24 24">
+                        <circle class="bg" cx="12" cy="12" r="10" />
+                        <circle class="progress" id="refresh-progress" cx="12" cy="12" r="10"
+                                stroke-dasharray="62.83"
+                                stroke-dashoffset="0" />
+                    </svg>
+                    <span id="auto-refresh-label">Auto 60s</span>
+                </div>
+                
+                <button id="refresh-btn" class="btn-primary btn-breathe" aria-label="Atualizar métricas">
+                    <i data-lucide="refresh-cw" aria-hidden="true" class="refresh-icon"></i>
+                    <span>Atualizar</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="dashboard-container">
+        <!-- Live region for screen readers -->
+        <div id="live-region" class="sr-only" aria-live="polite"></div>
+
+        <!-- KPI Cards Row -->
+        <section class="kpi-grid" aria-label="Métricas principais">
+            <div class="card kpi-card accent-violet skeleton" id="kpi-total">
+                <div class="card-header">
+                    <h2>Total de Conversas</h2>
+                    <div class="icon-wrapper violet">
+                        <i data-lucide="message-circle" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="metric-value has-glow" id="total-count">--</p>
+                    <p class="metric-label">Na caixa de entrada</p>
+                </div>
+            </div>
+
+            <div class="card kpi-card accent-rose skeleton" id="kpi-unassigned">
+                <div class="card-header">
+                    <h2>Não Atribuídas</h2>
+                    <div class="icon-wrapper rose">
+                        <i data-lucide="user-x" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="metric-value" id="unassigned-count">--</p>
+                    <p class="metric-label">Aguardando agente</p>
+                </div>
+            </div>
+
+            <div class="card kpi-card accent-emerald skeleton" id="kpi-mine">
+                <div class="card-header">
+                    <h2>Minhas Conversas</h2>
+                    <div class="icon-wrapper emerald">
+                        <i data-lucide="user-check" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="metric-value" id="mine-count">--</p>
+                    <p class="metric-label">Atribuídas a você</p>
+                </div>
+            </div>
+
+            <div class="card kpi-card accent-cyan skeleton" id="kpi-rate">
+                <div class="card-header">
+                    <h2>Taxa de Atribuição</h2>
+                    <div class="icon-wrapper cyan">
+                        <i data-lucide="percent" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="metric-value" id="rate-value">--<span class="metric-suffix">%</span></p>
+                    <p class="metric-label">Conversas atribuídas</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Row -->
+        <section class="charts-grid" aria-label="Gráficos">
+            <div class="card chart-card skeleton" id="assignment-chart-card">
+                <div class="card-header">
+                    <h2>Distribuição de Etiquetas</h2>
+                </div>
+                <div class="card-body chart-container" style="height: 280px;">
+                    <canvas id="assignmentChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card full-width-chart skeleton" id="labels-chart-card">
+                <div class="card-header">
+                    <h2>Conversas por Etiqueta</h2>
+                </div>
+                <div class="card-body chart-container" style="height: 280px;">
+                    <canvas id="labelsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Labels Grid -->
+        <section class="labels-section" aria-labelledby="labels-heading">
+            <div class="section-header">
+                <h2 id="labels-heading">Etiquetas</h2>
+                <span class="label-count-badge" id="labels-total-badge">—</span>
+            </div>
+            
+            <div class="labels-grid" id="labels-container">
+                <!-- Skeleton Loading Items -->
+                <div class="card label-card skeleton"></div>
+                <div class="card label-card skeleton"></div>
+                <div class="card label-card skeleton"></div>
+                <div class="card label-card skeleton"></div>
+                <div class="card label-card skeleton"></div>
+                <div class="card label-card skeleton"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

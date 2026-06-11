@@ -11,14 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // KPI Elements
     const totalCountEl = document.getElementById('total-count');
-    const unassignedCountEl = document.getElementById('unassigned-count');
-    const mineCountEl = document.getElementById('mine-count');
+    const openCountEl = document.getElementById('open-count');
+    const resolvedCountEl = document.getElementById('resolved-count');
     const rateValueEl = document.getElementById('rate-value');
 
     // KPI Cards
     const kpiTotal = document.getElementById('kpi-total');
-    const kpiUnassigned = document.getElementById('kpi-unassigned');
-    const kpiMine = document.getElementById('kpi-mine');
+    const kpiOpen = document.getElementById('kpi-open');
+    const kpiResolved = document.getElementById('kpi-resolved');
     const kpiRate = document.getElementById('kpi-rate');
 
     // Chart Cards
@@ -38,6 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
     const autoRefreshLabel = document.getElementById('auto-refresh-label');
     const refreshProgress = document.getElementById('refresh-progress');
+
+    // Inbox Selector
+    const inboxSelect = document.getElementById('inbox-select');
+    const inboxNameLabel = document.getElementById('inbox-name-label');
+
+    // Date Selector
+    const dateSelect = document.getElementById('date-select');
+    const customDateContainer = document.getElementById('custom-date-container');
+    const dateSince = document.getElementById('date-since');
+    const dateUntil = document.getElementById('date-until');
 
     // Toast
     const toastContainer = document.getElementById('toast-container');
@@ -209,11 +219,12 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshIcon.classList.add('spin');
         refreshBtn.classList.remove('btn-breathe');
         refreshBtn.setAttribute('aria-disabled', 'true');
+        if (inboxSelect) inboxSelect.disabled = true;
 
         if (!silent) {
             kpiTotal.classList.add('skeleton');
-            kpiUnassigned.classList.add('skeleton');
-            kpiMine.classList.add('skeleton');
+            kpiOpen.classList.add('skeleton');
+            kpiResolved.classList.add('skeleton');
             kpiRate.classList.add('skeleton');
             assignmentChartCard.classList.add('skeleton');
             labelsChartCard.classList.add('skeleton');
@@ -222,24 +233,62 @@ document.addEventListener('DOMContentLoaded', () => {
         liveRegion.textContent = 'Carregando métricas…';
 
         try {
-            const response = await fetch('/api/metrics');
-            if (!response.ok) throw new Error('Failed to fetch');
+            let queryParams = [];
+            if (inboxSelect && inboxSelect.value) {
+                queryParams.push(`inbox_id=${inboxSelect.value}`);
+            }
+
+            // Handle date parameters
+            let since = null;
+            let until = null;
+            
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+
+            if (dateSelect) {
+                const dateVal = dateSelect.value;
+                if (dateVal === 'today') {
+                    // Chatwoot requires unix timestamp or ISO. Actually string YYYY-MM-DD works.
+                    since = todayStr;
+                } else if (dateVal === '7d') {
+                    const d = new Date();
+                    d.setDate(d.getDate() - 7);
+                    since = d.toISOString().split('T')[0];
+                } else if (dateVal === '30d') {
+                    const d = new Date();
+                    d.setDate(d.getDate() - 30);
+                    since = d.toISOString().split('T')[0];
+                } else if (dateVal === 'month') {
+                    const d = new Date(now.getFullYear(), now.getMonth(), 1);
+                    since = d.toISOString().split('T')[0];
+                } else if (dateVal === 'custom') {
+                    if (dateSince.value) since = dateSince.value;
+                    if (dateUntil.value) until = dateUntil.value;
+                }
+            }
+
+            if (since) queryParams.push(`since=${since}`);
+            if (until) queryParams.push(`until=${until}`);
+
+            const queryStr = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+            const response = await fetch(`/api/metrics${queryStr}`);
+            if (!response.ok) throw new Error('Failed to fetch metrics');
 
             const data = await response.json();
             setStatus(true);
 
             // Remove skeletons
-            [kpiTotal, kpiUnassigned, kpiMine, kpiRate, assignmentChartCard, labelsChartCard]
+            [kpiTotal, kpiOpen, kpiResolved, kpiRate, assignmentChartCard, labelsChartCard]
                 .forEach(el => el.classList.remove('skeleton'));
 
             // Animate KPI values
             animateCount(totalCountEl, data.totalConversations, 1000);
-            animateCount(unassignedCountEl, data.unassignedCount, 800);
-            animateCount(mineCountEl, data.mineCount, 800);
+            animateCount(openCountEl, data.openCount, 800);
+            animateCount(resolvedCountEl, data.resolvedCount, 800);
 
-            // Calculate attribution rate
+            // Calculate resolution rate
             const rate = data.totalConversations > 0
-                ? Math.round(((data.totalConversations - data.unassignedCount) / data.totalConversations) * 100)
+                ? Math.round((data.resolvedCount / data.totalConversations) * 100)
                 : 0;
             animateCount(rateValueEl, rate, 800, '<span class="metric-suffix">%</span>');
 
@@ -300,12 +349,12 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus(false);
             liveRegion.textContent = 'Erro ao carregar as métricas.';
 
-            [kpiTotal, kpiUnassigned, kpiMine, kpiRate, assignmentChartCard, labelsChartCard]
+            [kpiTotal, kpiOpen, kpiResolved, kpiRate, assignmentChartCard, labelsChartCard]
                 .forEach(el => el.classList.remove('skeleton'));
 
             totalCountEl.textContent = '—';
-            unassignedCountEl.textContent = '—';
-            mineCountEl.textContent = '—';
+            openCountEl.textContent = '—';
+            resolvedCountEl.textContent = '—';
             rateValueEl.innerHTML = '—<span class="metric-suffix">%</span>';
             labelsContainer.innerHTML = '<p style="color: var(--text-muted); padding: var(--space-3);">Erro ao carregar as etiquetas.</p>';
 
@@ -314,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             refreshIcon.classList.remove('spin');
             refreshBtn.classList.add('btn-breathe');
             refreshBtn.removeAttribute('aria-disabled');
+            if (inboxSelect) inboxSelect.disabled = false;
         }
     };
 
@@ -474,9 +524,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    inboxSelect.addEventListener('change', () => {
+        const selectedOption = inboxSelect.options[inboxSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            inboxNameLabel.textContent = `Na caixa de entrada ${selectedOption.text}`;
+            fetchMetrics(false);
+        }
+    });
+
+    dateSelect.addEventListener('change', () => {
+        if (dateSelect.value === 'custom') {
+            customDateContainer.style.display = 'flex';
+        } else {
+            customDateContainer.style.display = 'none';
+            fetchMetrics(false);
+        }
+    });
+
+    dateSince.addEventListener('change', () => {
+        if (dateSince.value) fetchMetrics(false);
+    });
+
+    dateUntil.addEventListener('change', () => {
+        if (dateUntil.value) fetchMetrics(false);
+    });
+
+    // ================================================================
+    // Fetch Inboxes
+    // ================================================================
+    const fetchInboxesAndInit = async () => {
+        try {
+            const res = await fetch('/api/inboxes');
+            if (!res.ok) throw new Error('Failed to fetch inboxes');
+            const inboxes = await res.json();
+            
+            inboxSelect.innerHTML = '';
+            inboxes.forEach(inbox => {
+                const option = document.createElement('option');
+                option.value = inbox.id;
+                option.textContent = inbox.name;
+                // Auto-select Evolution API if present initially
+                if (inbox.id == 10) option.selected = true;
+                inboxSelect.appendChild(option);
+            });
+            
+            // Set initial label
+            const selectedOption = inboxSelect.options[inboxSelect.selectedIndex];
+            if (selectedOption) {
+                inboxNameLabel.textContent = `Na caixa de entrada ${selectedOption.text}`;
+            }
+
+        } catch (error) {
+            console.error('Error fetching inboxes:', error);
+            inboxSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+        } finally {
+            fetchMetrics(false);
+            startAutoRefresh();
+        }
+    };
+
     // ================================================================
     // Init
     // ================================================================
-    fetchMetrics(false);
-    startAutoRefresh();
+    fetchInboxesAndInit();
 });

@@ -50,8 +50,29 @@
                     </svg>
                     <span id="auto-refresh-label">Auto 60s</span>
                 </div>
-                
-                <button id="refresh-btn" class="btn-primary btn-breathe" aria-label="Atualizar métricas">
+                <div class="filter-wrapper">
+                    <select id="date-select" class="inbox-select" aria-label="Selecione o Período">
+                        <option value="all">Todo o período</option>
+                        <option value="today">Hoje</option>
+                        <option value="7d">Últimos 7 dias</option>
+                        <option value="30d">Últimos 30 dias</option>
+                        <option value="month">Mês atual</option>
+                        <option value="custom">Personalizado...</option>
+                    </select>
+                    <i data-lucide="calendar" aria-hidden="true" class="select-icon"></i>
+                </div>
+                <div id="custom-date-container" class="custom-date-container" style="display: none;">
+                    <input type="date" id="date-since" class="date-input" aria-label="Data Inicial">
+                    <span>até</span>
+                    <input type="date" id="date-until" class="date-input" aria-label="Data Final">
+                </div>
+                <div class="filter-wrapper">
+                    <select id="inbox-select" class="inbox-select" aria-label="Selecione a Caixa de Entrada">
+                        <option value="">Carregando caixas...</option>
+                    </select>
+                    <i data-lucide="chevron-down" aria-hidden="true" class="select-icon"></i>
+                </div>
+                <button id="refresh-btn" class="btn-primary" aria-label="Atualizar métricas">
                     <i data-lucide="refresh-cw" aria-hidden="true" class="refresh-icon"></i>
                     <span>Atualizar</span>
                 </button>
@@ -74,46 +95,46 @@
                 </div>
                 <div class="card-body">
                     <p class="metric-value has-glow" id="total-count">--</p>
-                    <p class="metric-label">Na caixa de entrada</p>
+                    <p class="metric-label" id="inbox-name-label">Na caixa de entrada</p>
                 </div>
             </div>
 
-            <div class="card kpi-card accent-rose skeleton" id="kpi-unassigned">
+            <div class="card kpi-card accent-rose skeleton" id="kpi-open">
                 <div class="card-header">
-                    <h2>Não Atribuídas</h2>
+                    <h2>Conversas Abertas</h2>
                     <div class="icon-wrapper rose">
-                        <i data-lucide="user-x" aria-hidden="true"></i>
+                        <i data-lucide="inbox" aria-hidden="true"></i>
                     </div>
                 </div>
                 <div class="card-body">
-                    <p class="metric-value" id="unassigned-count">--</p>
-                    <p class="metric-label">Aguardando agente</p>
+                    <p class="metric-value" id="open-count">--</p>
+                    <p class="metric-label">Aguardando ou em progresso</p>
                 </div>
             </div>
 
-            <div class="card kpi-card accent-emerald skeleton" id="kpi-mine">
+            <div class="card kpi-card accent-emerald skeleton" id="kpi-resolved">
                 <div class="card-header">
-                    <h2>Minhas Conversas</h2>
+                    <h2>Conversas Resolvidas</h2>
                     <div class="icon-wrapper emerald">
-                        <i data-lucide="user-check" aria-hidden="true"></i>
+                        <i data-lucide="check-circle" aria-hidden="true"></i>
                     </div>
                 </div>
                 <div class="card-body">
-                    <p class="metric-value" id="mine-count">--</p>
-                    <p class="metric-label">Atribuídas a você</p>
+                    <p class="metric-value" id="resolved-count">--</p>
+                    <p class="metric-label">Finalizadas com sucesso</p>
                 </div>
             </div>
 
             <div class="card kpi-card accent-cyan skeleton" id="kpi-rate">
                 <div class="card-header">
-                    <h2>Taxa de Atribuição</h2>
+                    <h2>Taxa de Resolução</h2>
                     <div class="icon-wrapper cyan">
                         <i data-lucide="percent" aria-hidden="true"></i>
                     </div>
                 </div>
                 <div class="card-body">
                     <p class="metric-value" id="rate-value">--<span class="metric-suffix">%</span></p>
-                    <p class="metric-label">Conversas atribuídas</p>
+                    <p class="metric-label">Chamados concluídos</p>
                 </div>
             </div>
         </section>

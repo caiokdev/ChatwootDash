@@ -1,9 +1,13 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const express = require('express');
 const path = require('path');
 
 const app = express();
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve static files ONLY for local development
+if (process.env.NODE_ENV !== 'production') {
+  app.use(express.static(path.join(__dirname, '..')));
+}
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.CHATWOOT_HOST;

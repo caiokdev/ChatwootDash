@@ -1,13 +1,10 @@
-require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
 const app = express();
 
-// Serve static files ONLY for local development
-if (process.env.NODE_ENV !== 'production') {
-  app.use(express.static(path.join(__dirname, '..')));
-}
+app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.CHATWOOT_HOST;
@@ -169,6 +166,11 @@ app.get('/api/metrics', async (req, res) => {
     console.error('Error fetching metrics:', error);
     res.status(500).json({ error: 'Failed to fetch metrics from Chatwoot' });
   }
+});
+
+// Catch-all route to serve the frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Export the app for Vercel Serverless Function support

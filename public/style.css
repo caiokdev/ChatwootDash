@@ -294,31 +294,107 @@ h1, h2, h3 {
   display: flex;
   align-items: center;
 }
+
+.inbox-select {
+  appearance: none;
+  background: rgba(22, 20, 38, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  padding: 10px 40px 10px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition-normal);
+  min-width: 190px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.inbox-select:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 12px rgba(139, 92, 246, 0.1);
+}
+
+.inbox-select:focus {
+  border-color: var(--violet-500);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+}
+
+.inbox-select option {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  padding: 12px;
+}
+
+.select-icon {
+  position: absolute;
+  right: 14px;
+  color: var(--violet-400);
+  pointer-events: none;
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
+  transition: opacity var(--transition-fast);
+}
+
+.inbox-select:hover + .select-icon {
+  opacity: 1;
+}
+
 .custom-date-container {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
-  padding: 4px var(--space-2);
-  border-radius: 8px;
+  background: rgba(22, 20, 38, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-normal);
 }
+
+.custom-date-container:hover {
+  border-color: rgba(139, 92, 246, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .custom-date-container span {
   font-size: 0.85rem;
   color: var(--text-secondary);
+  font-weight: 500;
 }
+
 .date-input {
   background: transparent;
   border: none;
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   outline: none;
   cursor: pointer;
+  padding: 4px 2px;
+  transition: color var(--transition-fast);
 }
+
+.date-input:focus {
+  color: var(--violet-300);
+}
+
 .date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1) opacity(0.7);
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(200deg) opacity(0.8);
   cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 .auto-refresh-wrapper {
   display: flex;
